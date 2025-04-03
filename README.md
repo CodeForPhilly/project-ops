@@ -49,3 +49,7 @@ See [.schemas/hosting.json](.schemas/hosting.json) for the complete schema.
 ### Schema Validation
 
 The repository includes JSON Schema definitions in the `.schemas/` directory that provide validation and autocompletion in VSCode while editing the YAML files with the "YAML" VSCode extension by Red Had installed.
+
+### Continuous Integration
+
+A GitHub Actions workflow automatically validates all YAML files against their respective schemas on every push and pull request that modifies YAML or schema files. This ensures that all configuration files remain valid as changes are made.

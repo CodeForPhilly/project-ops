@@ -1,0 +1,52 @@
+name: Validate Schemas
+
+on:
+  push:
+    paths:
+      - '**/*.yaml'
+      - '**/*.yml'
+      - '.schemas/**/*.json'
+  pull_request:
+    paths:
+      - '**/*.yaml'
+      - '**/*.yml'
+      - '.schemas/**/*.json'
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install ajv-cli
+        run: npm install -g ajv-cli
+
+      - name: Validate JSON Schemas
+        run: |
+          # First validate that our schema files are valid JSON Schema
+          for schema in .schemas/*.json; do
+            echo "Validating schema file: $schema"
+            ajv compile -s http://json-schema.org/draft-07/schema -c $schema
+          done
+
+      - name: Validate YAML Files
+        run: |
+          # Install yaml parsing tools
+          npm install -g yaml-validator
+
+          # Validate development.yaml files against schema
+          for file in **/development.yaml; do
+            echo "Validating: $file"
+            yaml-validator -s .schemas/development.json $file
+          done
+
+          # Validate hosting.yaml files against schema
+          for file in **/hosting.yaml; do
+            echo "Validating: $file"
+            yaml-validator -s .schemas/hosting.json $file
+          done
