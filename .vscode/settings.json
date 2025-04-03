@@ -1,0 +1,6 @@
+{
+  "yaml.schemas": {
+    ".schemas/development.json": ["**/development.yaml"],
+    ".schemas/hosting.json": ["**/hosting.yaml"]
+  }
+}
