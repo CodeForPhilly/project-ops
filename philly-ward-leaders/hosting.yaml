@@ -1,0 +1,10 @@
+domains:
+  - name: phillywardleaders.com
+    registrar: namecheap-codeforphilly
+    expiration: 2026-03-29
+deployments:
+  - name: production
+    environment: github-pages
+    urls:
+      - https://phillywardleaders.com
+      - https://www.phillywardleaders.com
