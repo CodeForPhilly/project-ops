@@ -1,0 +1,14 @@
+domains:
+  - name: choosenativeplants.com
+    registrar: namecheap-codeforphilly
+deployments:
+  - name: production
+    environment: cfp-live-cluster
+    urls:
+      - https://choosenativeplants.com
+      - https://choose-native-plants.live.k8s.phl.io
+      - https://www.choosenativeplants.com
+  - name: staging
+    environment: cfp-sandbox-cluster
+    urls:
+      - https://choose-native-plants.sandbox.k8s.phl.io
