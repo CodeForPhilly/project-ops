@@ -13,40 +13,41 @@ on:
       - '.schemas/**/*.json'
 
 jobs:
-  validate:
+  prepare:
     runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.set-matrix.outputs.matrix }}
     steps:
       - uses: actions/checkout@v4
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
+      - id: set-matrix
+        run: |
+          PROJECTS=$(ls -d */ | grep -v '.git\|.github\|.schemas\|.vscode' | sed 's#/##')
+          CONFIGS=("development" "hosting")
+          MATRIX="{\"include\":["
+          FIRST=true
+          for project in $PROJECTS; do
+            for config in "${CONFIGS[@]}"; do
+              if [ "$FIRST" = true ]; then
+                FIRST=false
+              else
+                MATRIX+=","
+              fi
+              MATRIX+="{\"project\":\"$project\",\"config\":\"$config\"}"
+            done
+          done
+          MATRIX+="]}"
+          echo "matrix=$MATRIX" >> $GITHUB_OUTPUT
+
+  validate:
+    needs: prepare
+    runs-on: ubuntu-latest
+    strategy:
+      matrix: ${{fromJson(needs.prepare.outputs.matrix)}}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: nrkno/yaml-schema-validator-github-action@v5
         with:
-          node-version: '20'
-
-      - name: Install ajv-cli
-        run: npm install -g ajv-cli
-
-      - name: Validate JSON Schemas
-        run: |
-          # First validate that our schema files are valid JSON Schema
-          for schema in .schemas/*.json; do
-            echo "Validating schema file: $schema"
-            ajv compile -s http://json-schema.org/draft-07/schema -c $schema
-          done
-
-      - name: Validate YAML Files
-        run: |
-          # Install yaml parsing tools
-          npm install -g yaml-validator
-
-          # Validate development.yaml files against schema
-          for file in **/development.yaml; do
-            echo "Validating: $file"
-            yaml-validator -s .schemas/development.json $file
-          done
-
-          # Validate hosting.yaml files against schema
-          for file in **/hosting.yaml; do
-            echo "Validating: $file"
-            yaml-validator -s .schemas/hosting.json $file
-          done
+          schema: .schemas/${{ matrix.config }}.json
+          target: ${{ matrix.project }}/${{ matrix.config }}.yaml
